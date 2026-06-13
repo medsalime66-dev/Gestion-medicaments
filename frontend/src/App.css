@@ -39,6 +39,7 @@ body {
 }
 
 .page-header h1 { font-size: 1.7rem; color: #1a73e8; }
+.page-subtitle { font-size: 0.9rem; color: #6b7280; margin-top: 4px; }
 
 .btn-primary {
   background: #1a73e8; color: white; border: none;
@@ -99,6 +100,12 @@ tr:hover td { background: #f9fafb; }
   border-radius: 8px; font-size: 1rem; outline: none;
 }
 .form-group input:focus { border-color: #1a73e8; box-shadow: 0 0 0 3px rgba(26,115,232,0.1); }
+.form-group select {
+  width: 100%; padding: 10px 14px; border: 1px solid #d1d5db;
+  border-radius: 8px; font-size: 1rem; outline: none; background: white; color: #333;
+}
+.form-group select:focus { border-color: #1a73e8; box-shadow: 0 0 0 3px rgba(26,115,232,0.1); }
+.section-titre { font-size: 1.1rem; color: #374151; font-weight: 600; margin-bottom: 20px; }
 .error-text { color: #ef4444; font-size: 0.82rem; margin-top: 4px; display: block; }
 .form-buttons { display: flex; align-items: center; margin-top: 10px; }
 
@@ -124,16 +131,23 @@ tr:hover td { background: #f9fafb; }
 .stat-card.stat-valide  { border-top-color: #10b981; }
 .stat-card.stat-bientot { border-top-color: #f59e0b; }
 .stat-card.stat-expire  { border-top-color: #ef4444; }
-.stat-card.stat-stock   { border-top-color: #8b5cf6; }
+.stat-card.stat-stock        { border-top-color: #8b5cf6; }
+.stat-card.stat-faible       { border-top-color: #f97316; }
+.stat-card.stat-ventes       { border-top-color: #1a73e8; }
+.stat-card.stat-unites       { border-top-color: #0891b2; }
 
 .stat-valeur { font-size: 1.6rem; font-weight: 700; color: #111827; }
 .stat-libelle { font-size: 0.85rem; color: #6b7280; font-weight: 500; }
 
-/* ===== Badges de statut (3 états) ===== */
+/* ===== Badges de statut (3 états + stock faible) ===== */
 .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; white-space: nowrap; }
 .badge.valide  { background: #d1fae5; color: #065f46; }
 .badge.bientot { background: #fef3c7; color: #92400e; }
 .badge.expire  { background: #fee2e2; color: #991b1b; }
+.badge.stock-faible { background: #FFEDD5; color: #9A3412; }
+.badge.stock-bas    { background: #FFEDD5; color: #9A3412; }
+
+.badge-groupe { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 
 /* ===== Coloration des lignes selon le statut ===== */
 tr.ligne-expire td  { background: #fef2f2; }

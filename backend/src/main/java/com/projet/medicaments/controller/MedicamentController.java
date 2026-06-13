@@ -26,6 +26,11 @@ public class MedicamentController {
         return medicamentService.getAll();
     }
 
+    @GetMapping("/stock-faible")
+    public List<Medicament> getStockFaible() {
+        return medicamentService.getStockFaible();
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Medicament> getById(@PathVariable Long id) {
         return medicamentService.getById(id)

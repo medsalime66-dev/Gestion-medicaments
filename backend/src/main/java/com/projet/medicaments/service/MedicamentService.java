@@ -4,11 +4,17 @@ import com.projet.medicaments.entity.Medicament;
 import com.projet.medicaments.repository.MedicamentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class MedicamentService {
+
+    private static final int SEUIL_QUANTITE = 20;
+    private static final int SEUIL_JOURS = 30;
 
     @Autowired
     private MedicamentRepository medicamentRepository;
@@ -41,5 +47,15 @@ public class MedicamentService {
 
     public List<Medicament> searchByNom(String nom) {
         return medicamentRepository.findByNomContainingIgnoreCase(nom);
+    }
+
+    public List<Medicament> getStockFaible() {
+        LocalDate aujourd_hui = LocalDate.now();
+        return medicamentRepository.findAll().stream()
+                .filter(m -> {
+                    long jours = ChronoUnit.DAYS.between(aujourd_hui, m.getExpiration());
+                    return m.getQuantite() < SEUIL_QUANTITE || (jours >= 0 && jours <= SEUIL_JOURS);
+                })
+                .collect(Collectors.toList());
     }
 }

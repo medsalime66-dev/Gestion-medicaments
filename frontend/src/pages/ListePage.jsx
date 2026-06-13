@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAll, remove, search } from '../services/medicamentService';
-
-// Seuil d'alerte : un médicament est "bientôt expiré" s'il expire dans moins de 30 jours
-const SEUIL_ALERTE_JOURS = 30;
+import { obtenirStatut, estStockFaible } from '../utils/statutMedicament';
 
 function ListePage() {
   const [medicaments, setMedicaments] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [message, setMessage] = useState('');
+  const [typeMessage, setTypeMessage] = useState('success');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,6 +19,7 @@ function ListePage() {
       const res = await getAll();
       setMedicaments(res.data);
     } catch (err) {
+      setTypeMessage('error');
       setMessage('Erreur lors du chargement. Vérifiez que le serveur est démarré.');
     }
   };
@@ -34,6 +34,7 @@ function ListePage() {
         const res = await search(val);
         setMedicaments(res.data);
       } catch (err) {
+        setTypeMessage('error');
         setMessage('Erreur lors de la recherche.');
       }
     }
@@ -43,30 +44,15 @@ function ListePage() {
     if (window.confirm('Voulez-vous vraiment supprimer ce médicament ?')) {
       try {
         await remove(id);
+        setTypeMessage('success');
         setMessage('Médicament supprimé avec succès !');
         loadMedicaments();
         setTimeout(() => setMessage(''), 3000);
       } catch (err) {
+        setTypeMessage('error');
         setMessage('Erreur lors de la suppression.');
       }
     }
-  };
-
-  /**
-   * Détermine le statut d'un médicament selon sa date d'expiration :
-   * - 'expire'  : la date est déjà passée
-   * - 'bientot' : expire dans moins de SEUIL_ALERTE_JOURS jours
-   * - 'valide'  : tout va bien
-   */
-  const obtenirStatut = (dateExpiration) => {
-    const aujourdHui = new Date();
-    aujourdHui.setHours(0, 0, 0, 0);
-    const expiration = new Date(dateExpiration);
-    const diffJours = Math.ceil((expiration - aujourdHui) / (1000 * 60 * 60 * 24));
-
-    if (diffJours < 0) return 'expire';
-    if (diffJours <= SEUIL_ALERTE_JOURS) return 'bientot';
-    return 'valide';
   };
 
   const LIBELLES_STATUT = {
@@ -82,6 +68,9 @@ function ListePage() {
     bientot: medicaments.filter((m) => obtenirStatut(m.expiration) === 'bientot').length,
     expires: medicaments.filter((m) => obtenirStatut(m.expiration) === 'expire').length,
     valeurStock: medicaments.reduce((somme, m) => somme + m.prix * m.quantite, 0),
+    stockFaible: medicaments.filter(
+      (m) => estStockFaible(m) && obtenirStatut(m.expiration) !== 'expire'
+    ).length,
   };
 
   return (
@@ -93,7 +82,7 @@ function ListePage() {
         </button>
       </div>
 
-      {message && <div className="alert success">{message}</div>}
+      {message && <div className={`alert ${typeMessage}`}>{message}</div>}
 
       {/* Cartes de statistiques */}
       <div className="stats-grid">
@@ -116,6 +105,10 @@ function ListePage() {
         <div className="stat-card stat-stock">
           <span className="stat-valeur">{stats.valeurStock.toFixed(2)}</span>
           <span className="stat-libelle">Valeur du stock (MRU)</span>
+        </div>
+        <div className="stat-card stat-faible">
+          <span className="stat-valeur">{stats.stockFaible}</span>
+          <span className="stat-libelle">Stock faible</span>
         </div>
       </div>
 
@@ -157,9 +150,14 @@ function ListePage() {
                     <td>{med.quantite}</td>
                     <td>{med.expiration}</td>
                     <td>
-                      <span className={`badge ${statut}`}>
-                        {LIBELLES_STATUT[statut]}
-                      </span>
+                      <div className="badge-groupe">
+                        <span className={`badge ${statut}`}>
+                          {LIBELLES_STATUT[statut]}
+                        </span>
+                        {estStockFaible(med) && statut !== 'expire' && (
+                          <span className="badge stock-faible">Stock faible</span>
+                        )}
+                      </div>
                     </td>
                     <td className="actions">
                       <button className="btn-edit" onClick={() => navigate(`/edit/${med.id}`)}>
